@@ -1,6 +1,7 @@
 use std::io::prelude::*;
 use std::net::TcpListener;
 use crate::shared::Buffer;
+use crate::shared::Message;
 
 pub struct Server {
     listener: TcpListener,
@@ -22,7 +23,9 @@ impl Server {
             match stream {
                 Ok(mut stream) => {
                     stream.read(&mut self.buffer.data).unwrap();
-                    println!("{}", String::from_utf8_lossy(&self.buffer.data[..]));
+                    let message = Message::from_buffer(&self.buffer);
+                    
+                    println!("{:?}", String::from_utf8_lossy(message.data));
                 }
                 Err(err) => {
                     panic!("An error has ocurred.\n{:?}", err)
