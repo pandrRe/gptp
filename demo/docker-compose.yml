@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  machine1:
+    build: ./machine
+    ports:
+      - "8081:8080"
+    tty: true
+  
+  machine2:
+    build: ./machine
+    ports:
+      - "8082:8080"
+    tty: true
