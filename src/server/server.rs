@@ -1,7 +1,6 @@
 use std::io::prelude::*;
 use std::net::TcpListener;
-use crate::shared::Buffer;
-use crate::shared::Message;
+use crate::shared::{Buffer, MessageParser};
 
 pub struct Server {
     listener: TcpListener,
@@ -13,7 +12,10 @@ impl Server {
         let listener = TcpListener::bind(format!("127.0.0.1:{}", port));
 
         match listener {
-            Ok(listener) => Ok(Server { listener, buffer: Buffer::gptp_standard() }),
+            Ok(listener) => Ok(Server {
+                listener,
+                buffer: Buffer::gptp_standard(),
+            }),
             Err(err) => Err(err)
         }
     }
@@ -22,15 +24,16 @@ impl Server {
         for stream in self.listener.incoming() {
             match stream {
                 Ok(mut stream) => {
-                    stream.read(&mut self.buffer.data).unwrap();
-                    let message = Message::from_buffer(&self.buffer);
-                    
-                    println!("{:?}", String::from_utf8_lossy(message.data));
+                    while let Ok(_) = stream.read(&mut self.buffer.data) {
+                        for message in MessageParser::from(&self.buffer) {
+                            println!("{}", String::from_utf8_lossy(&message.data));
+                        }
+                    }
                 }
                 Err(err) => {
                     panic!("An error has ocurred.\n{:?}", err)
                 }
             }
-        }   
+        }
     }
 }

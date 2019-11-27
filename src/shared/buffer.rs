@@ -1,6 +1,5 @@
 use std::fmt;
-
-const STD_BUFFER_SIZE: usize = 1100;
+use super::constants::STD_BUFFER_SIZE;
 
 pub struct Buffer {
     pub data: [u8; STD_BUFFER_SIZE]

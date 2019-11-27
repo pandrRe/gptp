@@ -1,3 +1,5 @@
+use std::io::{stdin};
+
 use gptp::Server;
 use gptp::client::Connection;
 use gptp::shared::{Message, MessageType};
@@ -13,11 +15,18 @@ fn main() {
 
     let mut connection = Connection::establish("127.0.0.1", 8080);
 
-    let message_data = b"test message 1";
-    let message = Message::new(MessageType::TextData, message_data.len(), message_data);
+    loop {
+        let mut input_buffer = String::new();
+        stdin().read_line(&mut input_buffer).unwrap();
 
-    connection.write_message_to_buffer(&message);
-    connection.send_message_on_buffer();
+        if input_buffer == "!!!\n" {
+            break;
+        }
+
+        let message = Message::new(MessageType::TextData, input_buffer.trim().as_bytes());
+        connection.write_message_to_buffer(&message);
+        connection.send_message_on_buffer();
+    }
 
     handle.join().unwrap();
 }

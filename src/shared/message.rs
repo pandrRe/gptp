@@ -1,24 +1,40 @@
 use super::MessageType;
 use super::Buffer;
 use super::ToRange;
+use super::constants::{MSG_TYPE_RANGE, MSG_DATA_POS, MSG_LEN_RANGE};
+use std::io::{Error, ErrorKind};
 
-const MSG_TYPE_RANGE: (usize, usize) = (0, 3);
-const MSG_LEN_RANGE: (usize, usize) = (3, 4);
-const MSG_DATA_POS: usize = 76;
-
-pub struct Message<'a> {
+pub struct Message {
     pub type_: MessageType,
     pub length: usize,
-    pub data: &'a [u8],
+    pub data: Box<[u8]>,
+    pub is_complete: bool
 }
 
-impl<'a> Message<'a> {
-    pub fn new(type_: MessageType, length: usize, data: &[u8]) -> Message {
+impl<'a> Message {
+    pub fn new(type_: MessageType, data: &[u8]) -> Message {
         Message {
             type_,
-            length,
-            data
+            length: data.len(),
+            data: Box::from(data),
+            is_complete: true
         }
+    }
+
+    pub fn get_type_from_buffer(raw_buffer: &[u8]) -> std::io::Result<MessageType> {
+        let message_type_str = std::str::from_utf8(&raw_buffer[MSG_TYPE_RANGE.to_range()]);
+
+        if let Err(_) = message_type_str {
+            return Err(Error::new(ErrorKind::InvalidData, "Invalid message type."));
+        }
+
+        return MessageType::from_str(message_type_str.unwrap());
+    }
+
+    pub fn get_size_from_buffer(raw_buffer: &[u8]) -> usize {
+        let mut length_bytes: [u8; 8] = [0; 8];
+        length_bytes.copy_from_slice(&raw_buffer[MSG_LEN_RANGE.to_range()]);
+        return usize::from_be_bytes(length_bytes);
     }
 
     pub fn from_buffer(buffer: &Buffer) -> Message {
@@ -28,7 +44,8 @@ impl<'a> Message<'a> {
         Message {
             type_: MessageType::from_str(std::str::from_utf8(&buffer.data[MSG_TYPE_RANGE.to_range()]).unwrap()).unwrap(),
             length: data_length,
-            data: &buffer.data[MSG_DATA_POS..MSG_DATA_POS + data_length]
+            data: Box::from(&buffer.data[MSG_DATA_POS..MSG_DATA_POS + data_length]),
+            is_complete: true
         }
     }
 }

@@ -7,7 +7,7 @@ Specification and implementation reference for GPTP.
 | Bytes         | Info Type      |
 |:-------------:|:--------------:|
 | 0 to 2        | Message Type   |
-| 3 and 4       | Message Length |
+| 3 to 10       | Message Length |
 | 76 up to 1099 | Message Body   |
 
 ## Message Types
