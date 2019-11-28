@@ -1,11 +1,16 @@
 use std::io::{stdin};
 use std::thread;
+use std::env;
 
 use gptp::Server;
 use gptp::client::Connection;
 use gptp::shared::{Message, MessageType};
 
 fn main() {
+    println!("GENERAL PAIRED TRANSFER PROTOCOL - Reference Application 0.1.0");
+    println!("Use @PORT to connect to a GPTP socket.\n");
+
+    let args: Vec<String> = env::args().collect();
     let mut server = Server::boot(8080).unwrap();
 
     let handle = thread::spawn(move || {
@@ -23,7 +28,7 @@ fn main() {
         }
 
         if input_buffer.starts_with("@") {
-            connection = Some(Connection::establish("127.0.0.1", input_buffer[1..5].parse::<i32>().unwrap()));
+            connection = Some(Connection::establish(&args[1], input_buffer[1..5].parse::<i32>().unwrap()));
             break;
         }
     }
@@ -32,9 +37,10 @@ fn main() {
     if let Some(mut conn) = connection {
         loop {
             stdin().read_line(&mut input_buffer).unwrap();
-            let message = Message::new(MessageType::Request, input_buffer.trim().as_bytes());
+            let message = Message::new(MessageType::TextData, input_buffer.trim().as_bytes());
 
             if input_buffer == "!!!\n" {
+                conn.close();
                 break;
             }
 

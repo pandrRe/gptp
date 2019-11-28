@@ -9,7 +9,8 @@ pub enum MessageType {
     RequestFile,
     AcceptFile,
     DenyFile,
-    FileData
+    FileData,
+    End
 }
 
 impl MessageType {
@@ -23,6 +24,7 @@ impl MessageType {
             "ACF" => Ok(MessageType::AcceptFile),
             "DNF" => Ok(MessageType::DenyFile),
             "FLE" => Ok(MessageType::FileData),
+            "END" => Ok(MessageType::End),
             _ => Err(Error::new(ErrorKind::InvalidData, "Invalid message type."))
         }
     }
@@ -36,7 +38,8 @@ impl MessageType {
             &MessageType::RequestFile => "RQF",
             &MessageType::AcceptFile => "ACF",
             &MessageType::DenyFile => "DNF",
-            &MessageType::FileData => "FLE"
+            &MessageType::FileData => "FLE",
+            &MessageType::End => "END"
         }
     }
 
